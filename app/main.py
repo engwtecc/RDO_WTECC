@@ -50,6 +50,12 @@ LOGO_PATH = os.path.join(BASE_DIR, "logo.png")
 
 app = FastAPI()
 
+
+
+from .database import engine
+from .models import Base
+
+Base.metadata.create_all(bind=engine)
 # =========================================
 # CORS
 # =========================================
@@ -1779,5 +1785,6 @@ if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
 
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+
 
 
