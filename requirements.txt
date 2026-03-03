@@ -1,8 +1,8 @@
 fastapi
-uvicorn
+uvicorn[standard]
 sqlalchemy
 psycopg2-binary
 passlib[bcrypt]
 python-multipart
 reportlab
-
+python-dotenv
