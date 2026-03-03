@@ -8,6 +8,12 @@ from datetime import datetime
 import uuid
 from sqlalchemy import Column, String
 
+
+from sqlalchemy.orm import declarative_base
+
+Base = declarative_base()
+
+
 senha_hash = Column(String, nullable=False)
 
 projeto_id = Column(UUID(as_uuid=True), ForeignKey("projetos.id"))
@@ -132,4 +138,5 @@ class BancoHorasMovimento(Base):
     tipo = Column(String)  # "credito" ou "debito"
     horas = Column(Float)  # valor positivo
     descricao = Column(String)
+
     created_at = Column(DateTime, default=datetime.utcnow)
