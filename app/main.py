@@ -1769,7 +1769,15 @@ def gerar_pdf_massa(
     )
 
 
+import os
 from fastapi.staticfiles import StaticFiles
 
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+UPLOAD_DIR = "uploads"
+
+# 🔥 Garante que a pasta exista antes de montar
+if not os.path.exists(UPLOAD_DIR):
+    os.makedirs(UPLOAD_DIR)
+
+app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+
 
