@@ -603,7 +603,7 @@ def listar_lancamento(colaborador_id: str, data: date, db: Session = Depends(get
     fotos_lista = [
     {
         "id": str(f.id),
-        "url": f"/uploads/{f.caminho}"
+        "url": f"https://rdo.wtecc.com.br/uploads/{f.caminho}"
     }
     for f in fotos
     ]
@@ -1318,7 +1318,7 @@ def admin_ver_relatorio(lancamento_id: str, db: Session = Depends(get_db)):
             for b in blocos
         ],
         "fotos": [
-            f"/uploads/{f.caminho}"
+            f"https://rdo.wtecc.com.br/uploads/{f.caminho}"
             for f in fotos
         ]
     }
@@ -1789,6 +1789,7 @@ if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
 
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+
 
 
 
