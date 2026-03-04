@@ -1220,7 +1220,7 @@ def gerar_pdf(lancamento_id: str, db: Session = Depends(get_db)):
         max_height = 700  # altura máxima útil da página
 
         for f in fotos:
-            caminho = os.path.join("uploads", f.caminho)
+            caminho = os.path.join(UPLOAD_DIR, f.caminho)
 
             if os.path.exists(caminho):
 
@@ -1709,7 +1709,7 @@ def gerar_pdf_massa(
         # FOTOS DINÂMICAS
         # ==============================
         for f in fotos:
-            caminho = os.path.join("uploads", f.caminho)
+            caminho = os.path.join(UPLOAD_DIR, f.caminho)
 
             if os.path.exists(caminho):
                 img = Image(caminho)
@@ -1785,6 +1785,7 @@ if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
 
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+
 
 
 
