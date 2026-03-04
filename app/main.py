@@ -853,6 +853,7 @@ def salvar_descricao(
 # FINALIZAR DIA
 # =========================================
 
+
 @app.put("/finalizar/{colaborador_id}/{data}")
 def finalizar_dia(colaborador_id: str, data: date, db: Session = Depends(get_db)):
 
@@ -874,7 +875,32 @@ def finalizar_dia(colaborador_id: str, data: date, db: Session = Depends(get_db)
             detail="Dia sem blocos. Marque como Folga se aplicável."
         )
 
-    lancamento.status = "enviado"
+    # 🔎 BUSCA USUÁRIO
+    usuario = db.query(Usuario).filter(
+        Usuario.id == colaborador_id
+    ).first()
+
+    # 🔥 SE FOR ADMIN → APROVA DIRETO
+    if usuario and usuario.perfil == "admin":
+
+        banco_positivo, banco_negativo = calcular_banco_dia(lancamento, blocos)
+
+        registro_banco = BancoHoras(
+            colaborador_id=lancamento.colaborador_id,
+            lancamento_id=lancamento.id,
+            data=lancamento.data,
+            banco_positivo=banco_positivo,
+            banco_negativo=banco_negativo,
+            tipo="gerado"
+        )
+
+        db.add(registro_banco)
+
+        lancamento.status = "aprovado"
+
+    else:
+        lancamento.status = "enviado"
+
     db.commit()
 
     return {"mensagem": "Dia finalizado"}
@@ -1789,6 +1815,7 @@ if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
 
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+
 
 
 
