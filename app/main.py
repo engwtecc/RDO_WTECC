@@ -42,7 +42,7 @@ from reportlab.platypus.tableofcontents import TableOfContents
 from reportlab.pdfgen import canvas
 
 import re
-UPLOAD_DIR = "uploads"
+UPLOAD_DIR = "/app/uploads"
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -1785,6 +1785,7 @@ if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
 
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+
 
 
 
