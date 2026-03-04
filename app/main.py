@@ -62,7 +62,8 @@ Base.metadata.create_all(bind=engine)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://frontend-wt.vercel.app",
+        "https://rdo.wtecc.com.br"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -1785,6 +1786,7 @@ if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
 
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+
 
 
 
