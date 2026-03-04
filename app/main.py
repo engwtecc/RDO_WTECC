@@ -1299,20 +1299,24 @@ def admin_ver_relatorio(lancamento_id: str, db: Session = Depends(get_db)):
         "folga": lancamento.folga,   
         "resumo": resumo,
         "blocos": [
-    {
-        "id": str(b.id),
-        "hora_inicio": b.hora_inicio,
-        "hora_fim": b.hora_fim,
-        "descricao": b.descricao,
-        "projeto_nome": db.query(Projeto).filter(
-            Projeto.id == b.projeto_id
-        ).first().nome if b.projeto_id else "",
-        "tipo_nome": db.query(TipoAtividade).filter(
-            TipoAtividade.id == b.tipo_atividade_id
-        ).first().nome if b.tipo_atividade_id else "",
-    }
-    for b in blocos
-],
+        {
+            "id": str(b.id),
+            "hora_inicio": b.hora_inicio,
+            "hora_fim": b.hora_fim,
+            "descricao": b.descricao,
+            "projeto_nome": (
+                db.query(Projeto).filter(Projeto.id == b.projeto_id).first().nome
+                if b.projeto_id and db.query(Projeto).filter(Projeto.id == b.projeto_id).first()
+                else ""
+            ),
+            "tipo_nome": (
+                db.query(TipoAtividade).filter(TipoAtividade.id == b.tipo_atividade_id).first().nome
+                if b.tipo_atividade_id and db.query(TipoAtividade).filter(TipoAtividade.id == b.tipo_atividade_id).first()
+                else ""
+            ),
+        }
+            for b in blocos
+        ],
         "fotos": [
             f"/uploads/{f.caminho}"
             for f in fotos
@@ -1779,7 +1783,6 @@ def gerar_pdf_massa(
 import os
 from fastapi.staticfiles import StaticFiles
 
-UPLOAD_DIR = "uploads"
 
 # 🔥 Garante que a pasta exista antes de montar
 if not os.path.exists(UPLOAD_DIR):
