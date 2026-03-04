@@ -1222,7 +1222,7 @@ def gerar_pdf(lancamento_id: str, db: Session = Depends(get_db)):
         for f in fotos:
             caminho = os.path.join("uploads", f.caminho)
 
-           if os.path.exists(caminho):
+            if os.path.exists(caminho):
 
                 try:
                     img_reader = ImageReader(caminho)
@@ -1785,6 +1785,7 @@ if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
 
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+
 
 
 
