@@ -623,47 +623,26 @@ def listar_lancamento(colaborador_id: str, data: date, db: Session = Depends(get
 
     for b in blocos_db:
 
+        projeto = db.query(Projeto).filter(
+            Projeto.id == b.projeto_id
+        ).first()
+        
         tipo = db.query(TipoAtividade).filter(
             TipoAtividade.id == b.tipo_atividade_id
         ).first()
 
-        projeto = db.query(Projeto).filter(
-            Projeto.id == b.projeto_id
-        ).first()
+
 
         blocos.append({
             "id": str(b.id),
             "hora_inicio": b.hora_inicio,
             "hora_fim": b.hora_fim,
-            "tipo_nome": tipo.nome if tipo else "",
             "projeto_nome": projeto.nome if projeto else "",
+            "tipo_nome": tipo.nome if tipo else "",
             "descricao": b.descricao,
         })
 
-    # ===============================
-    # MONTAR LISTA DE BLOCOS
-    # ===============================
 
-    blocos = []
-
-    for b in blocos_db:
-
-        tipo = db.query(TipoAtividade).filter(
-            TipoAtividade.id == b.tipo_atividade_id
-        ).first()
-
-        projeto = db.query(Projeto).filter(
-            Projeto.id == b.projeto_id
-        ).first()
-
-        blocos.append({
-            "id": str(b.id),
-            "hora_inicio": b.hora_inicio,
-            "hora_fim": b.hora_fim,
-            "tipo_nome": tipo.nome if tipo else "",
-            "projeto_nome": projeto.nome if projeto else "",
-            "descricao": b.descricao,
-        })
         if lancamento.folga:
             dia_semana = data.weekday()
 
@@ -1820,6 +1799,7 @@ if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
 
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+
 
 
 
