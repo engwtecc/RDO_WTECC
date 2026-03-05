@@ -402,6 +402,48 @@ def criar_projeto(dados: dict, db: Session = Depends(get_db)):
     }
 
 # =========================================
+# DELETE ADMIN
+# =========================================
+@app.delete("/admin/lancamento/{lancamento_id}")
+def excluir_lancamento(lancamento_id: str, db: Session = Depends(get_db)):
+
+    lancamento = db.query(LancamentoDia).filter(
+        LancamentoDia.id == lancamento_id
+    ).first()
+
+    if not lancamento:
+        raise HTTPException(status_code=404, detail="Lançamento não encontrado")
+
+    # 🔥 excluir fotos primeiro
+    fotos = db.query(FotoRelatorio).filter(
+        FotoRelatorio.lancamento_id == lancamento.id
+    ).all()
+
+    for f in fotos:
+        caminho = os.path.join(UPLOAD_DIR, f.caminho)
+
+        if os.path.exists(caminho):
+            os.remove(caminho)
+
+        db.delete(f)
+
+    # 🔥 excluir blocos
+    db.query(BlocoAtividade).filter(
+        BlocoAtividade.lancamento_id == lancamento.id
+    ).delete()
+
+    # 🔥 excluir registros de banco de horas
+    db.query(BancoHoras).filter(
+        BancoHoras.lancamento_id == lancamento.id
+    ).delete()
+
+    # 🔥 excluir lançamento
+    db.delete(lancamento)
+
+    db.commit()
+
+    return {"mensagem": "Lançamento excluído com sucesso"}
+# =========================================
 # LISTAR PROJETOS
 # =========================================
 
@@ -1799,6 +1841,7 @@ if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
 
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+
 
 
 
