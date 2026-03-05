@@ -1315,6 +1315,28 @@ def admin_ver_relatorio(lancamento_id: str, db: Session = Depends(get_db)):
         is_feriado=lancamento.feriado
     )
 
+    # 🔹 Montar lista de blocos corretamente
+    lista_blocos = []
+
+    for b in blocos:
+
+        projeto = db.query(Projeto).filter(
+            Projeto.id == b.projeto_id
+        ).first()
+
+        tipo = db.query(TipoAtividade).filter(
+            TipoAtividade.id == b.tipo_atividade_id
+        ).first()
+
+        lista_blocos.append({
+            "id": str(b.id),
+            "hora_inicio": b.hora_inicio,
+            "hora_fim": b.hora_fim,
+            "descricao": b.descricao,
+            "projeto_nome": projeto.nome if projeto else "",
+            "tipo_nome": tipo.nome if tipo else "",
+        })
+
     return {
         "id": str(lancamento.id),
         "data": lancamento.data,
@@ -1322,27 +1344,9 @@ def admin_ver_relatorio(lancamento_id: str, db: Session = Depends(get_db)):
         "descricao_geral": lancamento.descricao_geral,
         "motivo_reprovacao": lancamento.motivo_reprovacao,
         "feriado": lancamento.feriado,
-        "folga": lancamento.folga,   
+        "folga": lancamento.folga,
         "resumo": resumo,
-        "blocos": [
-        {
-            "id": str(b.id),
-            "hora_inicio": b.hora_inicio,
-            "hora_fim": b.hora_fim,
-            "descricao": b.descricao,
-            "projeto_nome": (
-                db.query(Projeto).filter(Projeto.id == b.projeto_id).first().nome
-                if b.projeto_id and db.query(Projeto).filter(Projeto.id == b.projeto_id).first()
-                else ""
-            ),
-            "tipo_nome": (
-                db.query(TipoAtividade).filter(TipoAtividade.id == b.tipo_atividade_id).first().nome
-                if b.tipo_atividade_id and db.query(TipoAtividade).filter(TipoAtividade.id == b.tipo_atividade_id).first()
-                else ""
-            ),
-        }
-            for b in blocos
-        ],
+        "blocos": lista_blocos,
         "fotos": [
             f"https://rdo.wtecc.com.br/uploads/{f.caminho}"
             for f in fotos
@@ -1815,6 +1819,7 @@ if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
 
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+
 
 
 
