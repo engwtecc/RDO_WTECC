@@ -780,8 +780,8 @@ def criar_lancamento(dados: schemas.LancamentoInput, db: Session = Depends(get_d
             id=uuid4(),
             lancamento_id=lancamento.id,
             projeto_id=bloco.projeto_id,
-            tipo_atividade_id=bloco.tipo_atividade_id,
-            #tipo_atividade_id=bloco.tipo_id,
+            #tipo_atividade_id=bloco.tipo_atividade_id,
+            tipo_atividade_id=bloco.tipo_id,
             hora_inicio=inicio,
             hora_fim=fim,
             descricao=bloco.descricao
@@ -1820,6 +1820,7 @@ if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
 
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+
 
 
 
