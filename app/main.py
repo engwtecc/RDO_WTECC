@@ -40,7 +40,14 @@ from reportlab.lib.units import inch
 from reportlab.platypus import PageTemplate, BaseDocTemplate, Frame
 from reportlab.platypus.tableofcontents import TableOfContents
 from reportlab.pdfgen import canvas
+from pydantic import BaseModel
 
+class EditarBlocoInput(BaseModel):
+    hora_inicio: datetime
+    hora_fim: datetime
+    projeto_id: str
+    tipo_atividade_id: int
+    descricao: str
 import re
 UPLOAD_DIR = "/app/uploads"
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -283,6 +290,42 @@ def excluir_foto(foto_id: str, db: Session = Depends(get_db)):
 
     return {"mensagem": "Foto excluída com sucesso"}
 
+
+
+# =========================================
+# Editar Bloco
+# =========================================
+
+@app.put("/bloco/{bloco_id}")
+def editar_bloco(bloco_id: str, dados: EditarBlocoInput, db: Session = Depends(get_db)):
+
+    bloco = db.query(BlocoAtividade).filter(
+        BlocoAtividade.id == bloco_id
+    ).first()
+
+    if not bloco:
+        raise HTTPException(status_code=404, detail="Bloco não encontrado")
+
+    lancamento = db.query(LancamentoDia).filter(
+        LancamentoDia.id == bloco.lancamento_id
+    ).first()
+
+    if lancamento.status not in ["rascunho", "reprovado"]:
+        raise HTTPException(
+            status_code=400,
+            detail="Não é possível editar blocos de dias enviados"
+        )
+
+    bloco.hora_inicio = dados.hora_inicio
+    bloco.hora_fim = dados.hora_fim
+    bloco.projeto_id = dados.projeto_id
+    bloco.tipo_atividade_id = dados.tipo_atividade_id
+    bloco.descricao = dados.descricao
+
+    db.commit()
+
+    return {"mensagem": "Bloco atualizado"}
+    
 # =========================================
 # Cancelar Envio
 # =========================================
@@ -1867,6 +1910,7 @@ if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
 
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+
 
 
 
