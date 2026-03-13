@@ -284,6 +284,32 @@ def excluir_foto(foto_id: str, db: Session = Depends(get_db)):
     return {"mensagem": "Foto excluída com sucesso"}
 
 # =========================================
+# Cancelar Envio
+# =========================================
+
+@app.put("/cancelar/{colaborador_id}/{data}")
+def cancelar_envio(colaborador_id: str, data: date, db: Session = Depends(get_db)):
+
+    lancamento = db.query(LancamentoDia).filter(
+        LancamentoDia.colaborador_id == colaborador_id,
+        LancamentoDia.data == data
+    ).first()
+
+    if not lancamento:
+        raise HTTPException(status_code=404, detail="Lançamento não encontrado")
+
+    if lancamento.status != "enviado":
+        raise HTTPException(
+            status_code=400,
+            detail="Somente relatórios enviados podem ser cancelados"
+        )
+
+    lancamento.status = "rascunho"
+
+    db.commit()
+
+    return {"mensagem": "Envio cancelado"}
+# =========================================
 # EXCLUIR BLOCO
 # =========================================
 
@@ -1841,6 +1867,7 @@ if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
 
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+
 
 
 
