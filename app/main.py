@@ -233,6 +233,22 @@ def excluir_usuario(usuario_id: str, db: Session = Depends(get_db)):
     return {"mensagem": "Usuário removido com sucesso"}
 
 # =========================================
+# Carregar tipos de atividades
+# =========================================
+
+@app.get("/tipos-atividade")
+def listar_tipos(db: Session = Depends(get_db)):
+
+    tipos = db.query(TipoAtividade).all()
+
+    return [
+        {
+            "id": t.id,
+            "nome": t.nome
+        }
+        for t in tipos
+    ]
+# =========================================
 # Anexar fotos
 # =========================================
 
