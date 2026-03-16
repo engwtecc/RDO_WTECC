@@ -577,11 +577,13 @@ def calcular_resumo(blocos_db, data_relatorio, is_feriado=False):
     JORNADA_SEX = 8
     ADICIONAL_NOTURNO_PERCENTUAL = 0.35
 
-    total_minutos_trabalhados = 0
-    minutos_noturnos = 0
+    minutos_produtivos = 0
     minutos_deslocamento = 0
+    minutos_noturnos = 0
 
-    dia_semana = data_relatorio.weekday()  # 0=seg ... 6=dom
+    # IDs de tipos (ajuste se necessário)
+    TIPO_REFEICAO = 5
+    TIPO_DESLOCAMENTO = 4
 
     for b in blocos_db:
 
@@ -590,34 +592,19 @@ def calcular_resumo(blocos_db, data_relatorio, is_feriado=False):
 
         minutos_bloco = (fim - inicio).total_seconds() / 60
 
-        # Buscar tipo pelo nome
-        tipo = b.tipo_atividade_id
-
-        # ⚠️ Ideal seria buscar nome no banco
-        # mas vamos manter simples por enquanto
-        # Se seu tipo deslocamento tiver ID fixo, ajuste aqui
-        # Melhor ainda: use nome no banco
-
-        # Exemplo por nome (RECOMENDADO):
-        # if b.tipo.nome.lower() == "refeição":
-
-        # Aqui vamos assumir:
-        TIPO_REFEICAO = 5
-        TIPO_DESLOCAMENTO = 4  # 🔥 ajuste para o ID real
-
         if b.tipo_atividade_id == TIPO_REFEICAO:
             continue
 
         if b.tipo_atividade_id == TIPO_DESLOCAMENTO:
             minutos_deslocamento += minutos_bloco
-            total_minutos_trabalhados += minutos_bloco
-            continue
+        else:
+            minutos_produtivos += minutos_bloco
 
-        total_minutos_trabalhados += minutos_bloco
-
-        # NOTURNO
+        # cálculo noturno
         hora_atual = inicio
+
         while hora_atual < fim:
+
             proxima = min(
                 fim,
                 hora_atual.replace(minute=0, second=0, microsecond=0)
@@ -629,60 +616,76 @@ def calcular_resumo(blocos_db, data_relatorio, is_feriado=False):
 
             hora_atual = proxima
 
-    horas_corridas = total_minutos_trabalhados / 60
-    horas_noturnas = minutos_noturnos / 60
+    horas_produtivas = minutos_produtivos / 60
     horas_deslocamento = minutos_deslocamento / 60
+    horas_noturnas = minutos_noturnos / 60
 
-    # ==============================
+    total_trabalhado = horas_produtivas + horas_deslocamento
+
+    # =============================
     # DEFINIR JORNADA
-    # ==============================
+    # =============================
+
+    dia_semana = data_relatorio.weekday()
+
     if is_feriado or dia_semana == 6:
         jornada = 0
     elif dia_semana == 5:
         jornada = 0
-    elif dia_semana in [0, 1, 2, 3]:
+    elif dia_semana in [0,1,2,3]:
         jornada = JORNADA_SEG_QUI
     elif dia_semana == 4:
         jornada = JORNADA_SEX
     else:
         jornada = 0
 
-    horas_50_base = 0
-    horas_100_base = 0
+    # =============================
+    # HORAS EXTRAS
+    # =============================
 
-    # 🔥 EXCLUI DESLOCAMENTO DO CÁLCULO DE EXTRA
-    horas_produtivas = horas_corridas - horas_deslocamento
+    horas_50 = 0
+    horas_100 = 0
 
     if is_feriado or dia_semana == 6:
-        horas_100_base = horas_produtivas
+        horas_100 = horas_produtivas
 
     elif dia_semana == 5:
-        horas_50_base = horas_produtivas
+        horas_50 = horas_produtivas
 
     else:
         if horas_produtivas > jornada:
-            horas_50_base = horas_produtivas - jornada
+            horas_50 = horas_produtivas - jornada
 
-    adicional_50 = horas_50_base * 0.5
-    adicional_100 = horas_100_base * 1.0
+    adicional_50 = horas_50 * 0.5
+    adicional_100 = horas_100 * 1.0
     adicional_noturno = horas_noturnas * ADICIONAL_NOTURNO_PERCENTUAL
 
-    banco_calculo = horas_corridas - jornada
-    banco_positivo = adicional_50 + horas_50_base + adicional_100 + horas_100_base + adicional_noturno + horas_deslocamento if banco_calculo > 0 else 0
-    banco_negativo = abs(banco_calculo) if banco_calculo < 0 else 0
+    # =============================
+    # BANCO DE HORAS
+    # =============================
+
+    banco_calculo = total_trabalhado - jornada
+
+    if banco_calculo > 0:
+        banco_positivo = banco_calculo
+        banco_negativo = 0
+    elif banco_calculo < 0:
+        banco_positivo = 0
+        banco_negativo = abs(banco_calculo)
+    else:
+        banco_positivo = 0
+        banco_negativo = 0
 
     total = (
-        horas_corridas
+        total_trabalhado
         + adicional_50
         + adicional_100
         + adicional_noturno
     )
-    # 🔥 Se for folga, sobrescreve banco
-    if hasattr(data_relatorio, "weekday"):
-        pass
+
     return {
         "horas_corridas": round(horas_produtivas, 2),
-        "horas_deslocamento": round(horas_deslocamento, 2),  # 🔥 NOVO
+        "horas_deslocamento": round(horas_deslocamento, 2),
         "horas_50": round(adicional_50, 2),
         "horas_100": round(adicional_100, 2),
         "adicional_noturno": round(adicional_noturno, 2),
