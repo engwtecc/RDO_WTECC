@@ -573,17 +573,19 @@ def calcular_resumo(blocos_db, data_relatorio, is_feriado=False):
 
     from datetime import timedelta
 
-    JORNADA_SEG_QUI = 9
-    JORNADA_SEX = 8
     ADICIONAL_NOTURNO_PERCENTUAL = 0.35
+
+    # IDs dos tipos (ajuste se necessário)
+    TIPO_REFEICAO = 5
+    TIPO_DESLOCAMENTO = 4
 
     minutos_produtivos = 0
     minutos_deslocamento = 0
     minutos_noturnos = 0
 
-    # IDs de tipos (ajuste se necessário)
-    TIPO_REFEICAO = 5
-    TIPO_DESLOCAMENTO = 4
+    # =============================
+    # PERCORRER BLOCOS
+    # =============================
 
     for b in blocos_db:
 
@@ -600,21 +602,21 @@ def calcular_resumo(blocos_db, data_relatorio, is_feriado=False):
         else:
             minutos_produtivos += minutos_bloco
 
-        # cálculo noturno
-        hora_atual = inicio
+            # cálculo noturno apenas para produtivo
+            hora_atual = inicio
 
-        while hora_atual < fim:
+            while hora_atual < fim:
 
-            proxima = min(
-                fim,
-                hora_atual.replace(minute=0, second=0, microsecond=0)
-                + timedelta(hours=1)
-            )
+                proxima = min(
+                    fim,
+                    hora_atual.replace(minute=0, second=0, microsecond=0)
+                    + timedelta(hours=1)
+                )
 
-            if hora_atual.hour >= 22 or hora_atual.hour < 6:
-                minutos_noturnos += (proxima - hora_atual).total_seconds() / 60
+                if hora_atual.hour >= 22 or hora_atual.hour < 6:
+                    minutos_noturnos += (proxima - hora_atual).total_seconds() / 60
 
-            hora_atual = proxima
+                hora_atual = proxima
 
     horas_produtivas = minutos_produtivos / 60
     horas_deslocamento = minutos_deslocamento / 60
@@ -628,53 +630,67 @@ def calcular_resumo(blocos_db, data_relatorio, is_feriado=False):
 
     dia_semana = data_relatorio.weekday()
 
-    if is_feriado or dia_semana == 6:
+    if is_feriado:
         jornada = 0
-    elif dia_semana == 5:
-        jornada = 0
-    elif dia_semana in [0,1,2,3]:
-        jornada = JORNADA_SEG_QUI
-    elif dia_semana == 4:
-        jornada = JORNADA_SEX
-    else:
+    elif dia_semana in [0,1,2,3]:  # seg-qui
+        jornada = 9
+    elif dia_semana == 4:          # sexta
+        jornada = 8
+    else:                          # sábado/domingo
         jornada = 0
 
     # =============================
     # HORAS EXTRAS
     # =============================
 
-    horas_50 = 0
-    horas_100 = 0
+    extra_50 = 0
+    extra_100 = 0
 
     if is_feriado or dia_semana == 6:
-        horas_100 = horas_produtivas
+        extra_100 = horas_produtivas
 
-    elif dia_semana == 5:
-        horas_50 = horas_produtivas
+    elif dia_semana == 5:  # sábado
+        extra_50 = horas_produtivas
 
     else:
         if horas_produtivas > jornada:
-            horas_50 = horas_produtivas - jornada
+            extra_50 = horas_produtivas - jornada
 
-    adicional_50 = horas_50 * 0.5
-    adicional_100 = horas_100 * 1.0
+    adicional_50 = extra_50 * 0.5
+    adicional_100 = extra_100 * 1.0
     adicional_noturno = horas_noturnas * ADICIONAL_NOTURNO_PERCENTUAL
 
     # =============================
     # BANCO DE HORAS
     # =============================
 
-    banco_calculo = total_trabalhado - jornada
+    banco_positivo = 0
+    banco_negativo = 0
 
-    if banco_calculo > 0:
-        banco_positivo = banco_calculo
-        banco_negativo = 0
-    elif banco_calculo < 0:
-        banco_positivo = 0
-        banco_negativo = abs(banco_calculo)
+    if jornada > 0:
+
+        if total_trabalhado < jornada:
+            banco_negativo = jornada - total_trabalhado
+
+        else:
+
+            banco_positivo = (
+                total_trabalhado
+                + adicional_50
+                + adicional_100
+                + adicional_noturno
+                - jornada
+            )
+
     else:
-        banco_positivo = 0
-        banco_negativo = 0
+
+        # sábado / domingo / feriado
+        banco_positivo = (
+            total_trabalhado
+            + adicional_50
+            + adicional_100
+            + adicional_noturno
+        )
 
     total = (
         total_trabalhado
