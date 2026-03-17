@@ -41,6 +41,9 @@ from reportlab.platypus import PageTemplate, BaseDocTemplate, Frame
 from reportlab.platypus.tableofcontents import TableOfContents
 from reportlab.pdfgen import canvas
 from pydantic import BaseModel
+from reportlab.platypus import Paragraph
+from reportlab.lib.styles import getSampleStyleSheet
+
 
 class EditarBlocoInput(BaseModel):
     hora_inicio: datetime
@@ -1807,8 +1810,6 @@ def gerar_pdf_massa(
                 TipoAtividade.id == b.tipo_atividade_id
             ).first()
 
-            from reportlab.platypus import Paragraph
-            from reportlab.lib.styles import getSampleStyleSheet
             
             styles = getSampleStyleSheet()
             
