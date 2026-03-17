@@ -1915,6 +1915,22 @@ def gerar_pdf_massa(
     ]))
 
     elementos.append(tabela_final)
+    # Espaço antes da assinatura
+    elementos.append(Spacer(1, 60))
+    
+    # Linha de assinatura
+    elementos.append(Paragraph(
+        "______________________________________________",
+        styles["Normal"]
+    ))
+    
+    elementos.append(Spacer(1, 10))
+    
+    # Texto da assinatura
+    elementos.append(Paragraph(
+        "<b>Responsável pela Aprovação</b>",
+        styles["Normal"]
+    ))
 
     doc.build(elementos)
     buffer.seek(0)
