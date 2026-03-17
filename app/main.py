@@ -1807,15 +1807,20 @@ def gerar_pdf_massa(
                 TipoAtividade.id == b.tipo_atividade_id
             ).first()
 
+            from reportlab.platypus import Paragraph
+            from reportlab.lib.styles import getSampleStyleSheet
+            
+            styles = getSampleStyleSheet()
+            
             dados_tabela.append([
                 b.hora_inicio.strftime("%H:%M"),
                 b.hora_fim.strftime("%H:%M"),
-                projeto.nome if projeto else "",
-                tipo.nome if tipo else "",
-                b.descricao
+                Paragraph(projeto.nome if projeto else "", styles["Normal"]),
+                Paragraph(tipo.nome if tipo else "", styles["Normal"]),
+                Paragraph(b.descricao or "", styles["Normal"]),
             ])
 
-        tabela = Table(dados_tabela, repeatRows=1)
+        tabela = Table(dados_tabela, repeatRows=1, colWidths=[60, 60, 120, 120, 200])
         tabela.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
             ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
