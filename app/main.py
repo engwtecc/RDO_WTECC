@@ -1737,11 +1737,7 @@ def gerar_pdf_massa(
             styles["Heading2"]
         ))
 
-    elementos.append(Spacer(1, 40))
-    elementos.append(Paragraph(
-        f"Gerado em {datetime.now().strftime('%d/%m/%Y %H:%M')}",
-        styles["Normal"]
-    ))
+    
 
     elementos.append(PageBreak())
 
