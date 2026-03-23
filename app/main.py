@@ -786,6 +786,8 @@ def listar_lancamento(colaborador_id: str, data: date, db: Session = Depends(get
             "id": str(b.id),
             "hora_inicio": b.hora_inicio,
             "hora_fim": b.hora_fim,
+            "projeto_id": str(b.projeto_id),           # 👈 ADD
+            "tipo_atividade_id": b.tipo_atividade_id,  # 👈 ADD
             "projeto_nome": projeto.nome if projeto else "",
             "tipo_nome": tipo.nome if tipo else "",
             "descricao": b.descricao,
