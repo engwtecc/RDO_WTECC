@@ -264,7 +264,6 @@ def banco_extrato(
 
     for r in registros:
 
-        # 🔥 IGNORA ZERADOS
         if (r.banco_positivo or 0) == 0 and (r.banco_negativo or 0) == 0:
             continue
 
