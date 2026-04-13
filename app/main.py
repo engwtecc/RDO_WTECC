@@ -236,6 +236,46 @@ def excluir_usuario(usuario_id: str, db: Session = Depends(get_db)):
     return {"mensagem": "Usuário removido com sucesso"}
 
 # =========================================
+# Extrato de dados do banco
+# =========================================
+
+@app.get("/admin/banco-extrato")
+def banco_extrato(
+    colaborador_id: str = Query(None),
+    data_inicio: date = Query(None),
+    data_fim: date = Query(None),
+    db: Session = Depends(get_db)
+):
+
+    query = db.query(BancoHoras)
+
+    if colaborador_id:
+        query = query.filter(BancoHoras.colaborador_id == colaborador_id)
+
+    if data_inicio:
+        query = query.filter(BancoHoras.data >= data_inicio)
+
+    if data_fim:
+        query = query.filter(BancoHoras.data <= data_fim)
+
+    registros = query.order_by(BancoHoras.data.desc()).all()
+
+    resultado = []
+
+    for r in registros:
+
+        # 🔥 IGNORA ZERADOS
+        if (r.banco_positivo or 0) == 0 and (r.banco_negativo or 0) == 0:
+            continue
+
+        resultado.append({
+            "data": r.data,
+            "banco_positivo": r.banco_positivo or 0,
+            "banco_negativo": r.banco_negativo or 0,
+        })
+
+    return resultado
+# =========================================
 # Carregar tipos de atividades
 # =========================================
 
