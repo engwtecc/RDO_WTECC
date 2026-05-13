@@ -60,7 +60,9 @@ LOGO_PATH = os.path.join(BASE_DIR, "logo.png")
 
 app = FastAPI()
 
-
+@app.get("/teste123")
+def teste123():
+    return {"ok": True}
 
 from .database import engine
 from .models import Base
