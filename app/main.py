@@ -578,16 +578,19 @@ def excluir_lancamento(lancamento_id: str, db: Session = Depends(get_db)):
 
 @app.get("/projetos")
 def listar_projetos(
-    incluir_inativos: bool = False,
+    inativos: bool = False,
     db: Session = Depends(get_db)
 ):
 
-    query = db.query(Projeto)
+    if inativos:
+        projetos = db.query(Projeto).filter(
+            Projeto.ativo == False
+        ).all()
 
-    if not incluir_inativos:
-        query = query.filter(Projeto.ativo == True)
-
-    projetos = query.all()
+    else:
+        projetos = db.query(Projeto).filter(
+            Projeto.ativo == True
+        ).all()
 
     return [
         {
@@ -619,6 +622,25 @@ def inativar_projeto(projeto_id: str, db: Session = Depends(get_db)):
 
     return {"mensagem": "Projeto inativado com sucesso"}
 
+# =========================================
+# REATIVAR PROJETO
+# =========================================
+@app.put("/projetos/{projeto_id}/reativar")
+def reativar_projeto(projeto_id: str, db: Session = Depends(get_db)):
+
+    projeto = db.query(Projeto).filter(
+        Projeto.id == projeto_id
+    ).first()
+
+    if not projeto:
+        raise HTTPException(status_code=404, detail="Projeto não encontrado")
+
+    projeto.ativo = True
+
+    db.commit()
+
+    return {"mensagem": "Projeto reativado"}
+    
 # =========================================
 # EDITAR NOME PROJETO
 # =========================================
