@@ -577,25 +577,34 @@ def excluir_lancamento(lancamento_id: str, db: Session = Depends(get_db)):
 # =========================================
 
 @app.get("/projetos")
-def listar_projetos(db: Session = Depends(get_db)):
+def listar_projetos(
+    incluir_inativos: bool = False,
+    db: Session = Depends(get_db)
+):
 
-    projetos = db.query(Projeto).all()
+    query = db.query(Projeto)
+
+    if not incluir_inativos:
+        query = query.filter(Projeto.ativo == True)
+
+    projetos = query.all()
 
     return [
         {
             "id": str(p.id),
             "nome": p.nome,
-            "cliente": p.cliente
+            "cliente": p.cliente,
+            "ativo": p.ativo
         }
         for p in projetos
     ]
 
 # =========================================
-# EXCLUIR PROJETO
+# INATIVAR PROJETO
 # =========================================
 
-@app.delete("/projetos/{projeto_id}")
-def excluir_projeto(projeto_id: str, db: Session = Depends(get_db)):
+@app.put("/projetos/{projeto_id}/inativar")
+def inativar_projeto(projeto_id: str, db: Session = Depends(get_db)):
 
     projeto = db.query(Projeto).filter(
         Projeto.id == projeto_id
@@ -604,11 +613,41 @@ def excluir_projeto(projeto_id: str, db: Session = Depends(get_db)):
     if not projeto:
         raise HTTPException(status_code=404, detail="Projeto não encontrado")
 
-    db.delete(projeto)
+    projeto.ativo = False
+
     db.commit()
 
-    return {"mensagem": "Projeto removido"}
+    return {"mensagem": "Projeto inativado com sucesso"}
 
+# =========================================
+# EDITAR NOME PROJETO
+# =========================================
+class EditarProjetoInput(BaseModel):
+    nome: str
+    cliente: str
+    
+@app.put("/projetos/{projeto_id}")
+def editar_projeto(
+    projeto_id: str,
+    dados: EditarProjetoInput,
+    db: Session = Depends(get_db)
+):
+
+    projeto = db.query(Projeto).filter(
+        Projeto.id == projeto_id
+    ).first()
+
+    if not projeto:
+        raise HTTPException(status_code=404, detail="Projeto não encontrado")
+
+    projeto.nome = dados.nome
+    projeto.cliente = dados.cliente
+
+    db.commit()
+
+    return {
+        "mensagem": "Projeto atualizado com sucesso"
+    }
 # =========================================
 # CÁLCULOS DE HORAS
 # =========================================
