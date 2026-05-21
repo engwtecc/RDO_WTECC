@@ -83,6 +83,7 @@ class Projeto(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     nome = Column(String(150), nullable=False)
     cliente = Column(String(150), nullable=False)
+    ativo = Column(Boolean, default=True)  
     created_at = Column(DateTime, default=datetime.utcnow)
 
 class FotoRelatorio(Base):
