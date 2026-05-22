@@ -1533,7 +1533,11 @@ def admin_ver_relatorio(lancamento_id: str, db: Session = Depends(get_db)):
 
     if not lancamento:
         raise HTTPException(status_code=404, detail="Relatório não encontrado")
-
+        
+    usuario = db.query(Usuario).filter(
+        Usuario.id == lancamento.colaborador_id
+        
+    ).first()
     blocos = db.query(BlocoAtividade).filter(
         BlocoAtividade.lancamento_id == lancamento.id
     ).order_by(BlocoAtividade.hora_inicio).all()
@@ -1572,6 +1576,7 @@ def admin_ver_relatorio(lancamento_id: str, db: Session = Depends(get_db)):
 
     return {
         "id": str(lancamento.id),
+        "colaborador_nome": usuario.nome if usuario else "",
         "data": lancamento.data,
         "status": lancamento.status,
         "descricao_geral": lancamento.descricao_geral,
