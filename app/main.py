@@ -172,7 +172,7 @@ def float_para_hhmm(valor):
 # =========================================
 # Apontamento de férias
 # =========================================
-@app.post("/admin/ferias")
+@app.post("/ferias")
 def cadastrar_ferias(
     dados: FeriasInput,
     db: Session = Depends(get_db)
@@ -952,6 +952,34 @@ def calcular_resumo(blocos_db, data_relatorio, is_feriado=False):
 
 @app.get("/lancamento/{colaborador_id}/{data}")
 def listar_lancamento(colaborador_id: str, data: date, db: Session = Depends(get_db)):
+
+    # =========================================
+    # VERIFICA FÉRIAS
+    # =========================================
+    ferias = db.query(Ferias).filter(
+        Ferias.colaborador_id == colaborador_id,
+        Ferias.data_inicio <= data,
+        Ferias.data_fim >= data
+    ).first()
+
+    if ferias:
+        return {
+            "status": "ferias",
+            "descricao_geral": "Colaborador em férias",
+            "blocos": [],
+            "fotos": [],
+            "resumo": {
+                "horas_corridas": 0,
+                "horas_deslocamento": 0,
+                "horas_50": 0,
+                "horas_100": 0,
+                "adicional_noturno": 0,
+                "banco_positivo": 0,
+                "banco_negativo": 0,
+                "total": 0
+            },
+            "motivo_reprovacao": None
+        }
 
     lancamento = db.query(LancamentoDia).filter(
         LancamentoDia.colaborador_id == colaborador_id,
