@@ -192,6 +192,30 @@ def cadastrar_ferias(
     return {
         "mensagem": "Férias cadastradas com sucesso"
     }
+
+# =========================================
+# EXCLUIR FÉRIAS
+# =========================================
+
+@app.delete("/ferias/{ferias_id}")
+def excluir_ferias(ferias_id: str, db: Session = Depends(get_db)):
+
+    registro = db.query(Ferias).filter(
+        Ferias.id == ferias_id
+    ).first()
+
+    if not registro:
+        raise HTTPException(
+            status_code=404,
+            detail="Registro de férias não encontrado"
+        )
+
+    db.delete(registro)
+    db.commit()
+
+    return {
+        "mensagem": "Férias removidas com sucesso"
+    }
 # =========================================
 # Lista de férias
 # =========================================
