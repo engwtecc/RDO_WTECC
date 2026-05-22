@@ -222,7 +222,7 @@ def listar_ferias(db: Session = Depends(get_db)):
 # Penências
 # =========================================
 
-@app.get("/admin/pendencias")
+@app.get("/pendencias")
 def painel_pendencias(
     data_inicio: date,
     data_fim: date,
@@ -2206,20 +2206,6 @@ app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 
 
-
-from datetime import date
-
-
-@app.get("/pendencias")
-def listar_pendencias():
-
-    return [
-        {
-            "usuario": "Teste Usuario",
-            "data": str(date.today()),
-            "status": "pendente"
-        }
-    ]
 
 
 
