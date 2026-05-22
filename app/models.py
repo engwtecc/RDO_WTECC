@@ -1,22 +1,24 @@
-from sqlalchemy import Column, String, Boolean, Date, DateTime, Numeric, ForeignKey, Integer, Text
+from sqlalchemy import (
+    Column,
+    String,
+    Boolean,
+    Date,
+    DateTime,
+    Numeric,
+    ForeignKey,
+    Integer,
+    Text,
+    Float
+)
+
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
+
 from .database import Base
-from sqlalchemy import Column, String, Boolean, DateTime
-from sqlalchemy.dialects.postgresql import UUID
+
 from datetime import datetime
+from uuid import uuid4
 import uuid
-from sqlalchemy import Column, String
-
-
-from sqlalchemy.orm import declarative_base
-
-Base = declarative_base()
-
-
-senha_hash = Column(String, nullable=False)
-
-projeto_id = Column(UUID(as_uuid=True), ForeignKey("projetos.id"))
 
 
 class LancamentoDia(Base):
@@ -139,5 +141,24 @@ class BancoHorasMovimento(Base):
     tipo = Column(String)  # "credito" ou "debito"
     horas = Column(Float)  # valor positivo
     descricao = Column(String)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class Ferias(Base):
+    __tablename__ = "ferias"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+
+    colaborador_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("usuarios.id"),
+        nullable=False
+    )
+
+    data_inicio = Column(Date, nullable=False)
+
+    data_fim = Column(Date, nullable=False)
+
+    observacao = Column(Text, nullable=True)
 
     created_at = Column(DateTime, default=datetime.utcnow)
