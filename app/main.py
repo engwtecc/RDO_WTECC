@@ -989,6 +989,7 @@ def listar_lancamento(colaborador_id: str, data: date, db: Session = Depends(get
     if ferias:
         return {
             "status": "ferias",
+            "em_ferias": True,
             "descricao_geral": "Colaborador em férias",
             "blocos": [],
             "fotos": [],
@@ -1094,6 +1095,7 @@ def listar_lancamento(colaborador_id: str, data: date, db: Session = Depends(get
     return {
     "id": str(lancamento.id),
     "status": lancamento.status,
+    "em_ferias": False,
     "descricao_geral": lancamento.descricao_geral,
     "feriado": lancamento.feriado,
     "folga": lancamento.folga,   # 👈 ADICIONE ISSO
