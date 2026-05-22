@@ -1572,6 +1572,7 @@ def admin_ver_relatorio(lancamento_id: str, db: Session = Depends(get_db)):
 
     return {
         "id": str(lancamento.id),
+        "colaborador_nome": usuario.nome if usuario else "",
         "data": lancamento.data,
         "status": lancamento.status,
         "descricao_geral": lancamento.descricao_geral,
