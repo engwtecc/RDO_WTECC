@@ -2207,7 +2207,19 @@ app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 
 
+from datetime import date
 
+
+@app.get("/pendencias")
+def listar_pendencias():
+
+    return [
+        {
+            "usuario": "Teste Usuario",
+            "data": str(date.today()),
+            "status": "pendente"
+        }
+    ]
 
 
 
