@@ -1,3 +1,4 @@
+from .models import Ferias
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib import colors
@@ -44,7 +45,12 @@ from pydantic import BaseModel
 from reportlab.platypus import Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
 
-
+class FeriasInput(BaseModel):
+    colaborador_id: str
+    data_inicio: date
+    data_fim: date
+    observacao: str | None = None
+    
 class EditarBlocoInput(BaseModel):
     hora_inicio: datetime
     hora_fim: datetime
@@ -163,6 +169,131 @@ def float_para_hhmm(valor):
     horas = total_minutos // 60
     minutos = total_minutos % 60
     return f"{horas:02d}:{minutos:02d}"
+# =========================================
+# Apontamento de férias
+# =========================================
+@app.post("/admin/ferias")
+def cadastrar_ferias(
+    dados: FeriasInput,
+    db: Session = Depends(get_db)
+):
+
+    novo = Ferias(
+        id=uuid4(),
+        colaborador_id=dados.colaborador_id,
+        data_inicio=dados.data_inicio,
+        data_fim=dados.data_fim,
+        observacao=dados.observacao
+    )
+
+    db.add(novo)
+    db.commit()
+
+    return {
+        "mensagem": "Férias cadastradas com sucesso"
+    }
+# =========================================
+# Lista de férias
+# =========================================
+
+@app.get("/admin/ferias")
+def listar_ferias(db: Session = Depends(get_db)):
+    registros = db.query(Ferias).all()
+
+    resultado = []
+
+    for f in registros:
+
+        usuario = db.query(Usuario).filter(
+            Usuario.id == f.colaborador_id
+        ).first()
+
+        resultado.append({
+            "id": str(f.id),
+            "colaborador_nome": usuario.nome if usuario else "",
+            "data_inicio": f.data_inicio,
+            "data_fim": f.data_fim,
+            "observacao": f.observacao
+        })
+
+    return resultado
+
+# =========================================
+# Penências
+# =========================================
+
+@app.get("/admin/pendencias")
+def painel_pendencias(
+    data_inicio: date,
+    data_fim: date,
+    db: Session = Depends(get_db)
+):
+
+    usuarios = db.query(Usuario).filter(
+        Usuario.perfil == "funcionario",
+        Usuario.ativo == True
+    ).all()
+
+    resultado = []
+
+    data_atual = data_inicio
+
+    from datetime import timedelta
+
+    while data_atual <= data_fim:
+
+        # ignora sábado/domingo
+        if data_atual.weekday() not in [5, 6]:
+
+            for usuario in usuarios:
+
+                # ==========================
+                # VERIFICA FÉRIAS
+                # ==========================
+                ferias = db.query(Ferias).filter(
+                    Ferias.colaborador_id == usuario.id,
+                    Ferias.data_inicio <= data_atual,
+                    Ferias.data_fim >= data_atual
+                ).first()
+
+                if ferias:
+
+                    resultado.append({
+                        "usuario": usuario.nome,
+                        "data": data_atual,
+                        "status": "ferias"
+                    })
+
+                    continue
+
+                # ==========================
+                # VERIFICA LANÇAMENTO
+                # ==========================
+                lancamento = db.query(LancamentoDia).filter(
+                    LancamentoDia.colaborador_id == usuario.id,
+                    LancamentoDia.data == data_atual
+                ).first()
+
+                if not lancamento:
+
+                    resultado.append({
+                        "usuario": usuario.nome,
+                        "data": data_atual,
+                        "status": "pendente"
+                    })
+
+                else:
+
+                    resultado.append({
+                        "usuario": usuario.nome,
+                        "data": data_atual,
+                        "status": lancamento.status
+                    })
+
+        data_atual += timedelta(days=1)
+
+    return resultado
+
 # =========================================
 # LOGIN
 # =========================================
