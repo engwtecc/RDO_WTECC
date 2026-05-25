@@ -1287,7 +1287,7 @@ def finalizar_dia(colaborador_id: str, data: date, db: Session = Depends(get_db)
         BlocoAtividade.lancamento_id == lancamento.id
     ).all()
 
-    if not blocos and not lancamento.folga:
+    if not blocos and not lancamento.folga and not lancamento.feriado::
         raise HTTPException(
             status_code=400,
             detail="Dia sem blocos. Marque como Folga se aplicável."
