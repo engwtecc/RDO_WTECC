@@ -1229,14 +1229,32 @@ def atualizar_feriado(
         LancamentoDia.data == data
     ).first()
 
+    # 🔥 cria automaticamente
     if not lancamento:
-        raise HTTPException(status_code=404, detail="Lançamento não encontrado")
+        lancamento = LancamentoDia(
+            id=uuid4(),
+            colaborador_id=colaborador_id,
+            data=data,
+            status="rascunho",
+            descricao_geral="",
+            feriado=dados.feriado,
+            folga=False
+        )
 
-    if lancamento.status not in ["rascunho", "reprovado"]:
-        raise HTTPException(status_code=400, detail="Dia já enviado.")
+        db.add(lancamento)
+        db.commit()
+        db.refresh(lancamento)
 
-    lancamento.feriado = dados.feriado
-    db.commit()
+    else:
+
+        if lancamento.status not in ["rascunho", "reprovado"]:
+            raise HTTPException(
+                status_code=400,
+                detail="Dia já enviado."
+            )
+
+        lancamento.feriado = dados.feriado
+        db.commit()
 
     return {"mensagem": "Feriado atualizado com sucesso"}
 
