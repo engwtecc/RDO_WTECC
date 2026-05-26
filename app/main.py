@@ -1094,9 +1094,9 @@ def listar_lancamento(colaborador_id: str, data: date, db: Session = Depends(get
             dia_semana = data.weekday()
 
             if dia_semana in [0,1,2,3]:
-                jornada = 9
+                jornada = usuario.jornada_seg_qui
             elif dia_semana == 4:
-                jornada = 8
+                jornada = usuario.jornada_sexta
             else:
                 jornada = 0
 
@@ -1810,9 +1810,9 @@ def calcular_banco_dia(lancamento, blocos):
 
     # Definir jornada corporativa
     if dia_semana in [0, 1, 2, 3]:   # Seg–Qui
-        jornada = 9
+        jornada = usuario.jornada_seg_qui
     elif dia_semana == 4:           # Sexta
-        jornada = 8
+        jornada = usuario.jornada_sexta
     else:
         jornada = 0                 # Sábado e Domingo
 
