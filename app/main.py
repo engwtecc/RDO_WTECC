@@ -1336,7 +1336,7 @@ def finalizar_dia(colaborador_id: str, data: date, db: Session = Depends(get_db)
     # 🔥 SE FOR ADMIN → APROVA DIRETO
     if usuario and usuario.perfil == "admin":
 
-        banco_positivo, banco_negativo = calcular_banco_dia(lancamento, blocos)
+        banco_positivo, banco_negativo = calcular_banco_dia(lancamento, blocos, usuario)
 
         registro_banco = BancoHoras(
             colaborador_id=lancamento.colaborador_id,
@@ -1379,7 +1379,7 @@ def aprovar_lancamento(lancamento_id: str, db: Session = Depends(get_db)):
         BlocoAtividade.lancamento_id == lancamento.id
     ).all()
 
-    banco_positivo, banco_negativo = calcular_banco_dia(lancamento, blocos)
+    banco_positivo, banco_negativo = calcular_banco_dia(lancamento, blocos, usuario)
 
     registro_banco = BancoHoras(
         colaborador_id=lancamento.colaborador_id,
@@ -1813,7 +1813,7 @@ def admin_ver_relatorio(lancamento_id: str, db: Session = Depends(get_db)):
         ]
     }
 
-def calcular_banco_dia(lancamento, blocos):
+def calcular_banco_dia(lancamento, blocos, usuario):
 
     dia_semana = lancamento.data.weekday()
 
