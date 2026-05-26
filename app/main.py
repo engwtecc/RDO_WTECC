@@ -1060,8 +1060,7 @@ def listar_lancamento(colaborador_id: str, data: date, db: Session = Depends(get
 
     resumo = calcular_resumo(
         blocos_db,
-        data,
-    usuario, 
+        data, 
         is_feriado=lancamento.feriado
     )
 
