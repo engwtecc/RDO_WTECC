@@ -890,25 +890,25 @@ def calcular_resumo(blocos_db, data_relatorio, is_feriado=False):
 
     dia_semana = data_relatorio.weekday()
 
-  #  if is_feriado:
- #       jornada = 0
-   # elif dia_semana in [0,1,2,3]:  # seg-qui
-  #      jornada = 9
- #   elif dia_semana == 4:          # sexta
- #       jornada = 8
-  #  else:                          # sábado/domingo
- #       jornada = 0
     if is_feriado:
+       jornada = 0
+    elif dia_semana in [0,1,2,3]:  # seg-qui
+        jornada = 9
+    elif dia_semana == 4:          # sexta
+        jornada = 8
+    else:                          # sábado/domingo
         jornada = 0
+   # if is_feriado:
+      #  jornada = 0
     
-    elif dia_semana in [0,1,2,3]:
-        jornada = usuario.jornada_seg_qui or 9
+   # elif dia_semana in [0,1,2,3]:
+   #     jornada = usuario.jornada_seg_qui or 9
     
-    elif dia_semana == 4:
-        jornada = usuario.jornada_sexta or 8
+  #  elif dia_semana == 4:
+   #     jornada = usuario.jornada_sexta or 8
     
-    else:
-        jornada = 0
+ #   else:
+   #     jornada = 0
     # =============================
     # HORAS EXTRAS
     # =============================
@@ -1093,10 +1093,10 @@ def listar_lancamento(colaborador_id: str, data: date, db: Session = Depends(get
         if lancamento.folga:
             dia_semana = data.weekday()
 
-            if dia_semana in [0,1,2,3]:
-                jornada = usuario.jornada_seg_qui
-            elif dia_semana == 4:
-                jornada = usuario.jornada_sexta
+        elif dia_semana in [0,1,2,3]:  # seg-qui
+            jornada = 9
+        elif dia_semana == 4:          # sexta
+            jornada = 8
             else:
                 jornada = 0
 
@@ -1809,10 +1809,10 @@ def calcular_banco_dia(lancamento, blocos):
     dia_semana = lancamento.data.weekday()
 
     # Definir jornada corporativa
-    if dia_semana in [0, 1, 2, 3]:   # Seg–Qui
-        jornada = usuario.jornada_seg_qui
-    elif dia_semana == 4:           # Sexta
-        jornada = usuario.jornada_sexta
+    if dia_semana in [0,1,2,3]:  # seg-qui
+        jornada = 9
+    elif dia_semana == 4:          # sexta
+        jornada = 8
     else:
         jornada = 0                 # Sábado e Domingo
 
