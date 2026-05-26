@@ -829,7 +829,7 @@ def editar_projeto(
 # CÁLCULOS DE HORAS
 # =========================================
 
-def calcular_resumo(blocos_db, data_relatorio, is_feriado=False):
+def calcular_resumo(blocos_db, data_relatorio, usuario, is_feriado=False):
 
     from datetime import timedelta
 
@@ -1060,7 +1060,7 @@ def listar_lancamento(colaborador_id: str, data: date, db: Session = Depends(get
 
     resumo = calcular_resumo(
         blocos_db,
-        data,
+        data,usuario, 
         is_feriado=lancamento.feriado
     )
 
@@ -1559,7 +1559,7 @@ def gerar_pdf(lancamento_id: str, db: Session = Depends(get_db)):
 
     resumo = calcular_resumo(
         blocos,
-        lancamento.data,
+        lancamento.data,usuario, 
         is_feriado=lancamento.feriado
     )
 
@@ -1761,7 +1761,7 @@ def admin_ver_relatorio(lancamento_id: str, db: Session = Depends(get_db)):
 
     resumo = calcular_resumo(
         blocos,
-        lancamento.data,
+        lancamento.data,usuario, 
         is_feriado=lancamento.feriado
     )
 
@@ -1825,7 +1825,7 @@ def calcular_banco_dia(lancamento, blocos):
     # Caso normal → usa cálculo padrão
     resumo = calcular_resumo(
         blocos,
-        lancamento.data,
+        lancamento.data,usuario, 
         is_feriado=lancamento.feriado
     )
 
@@ -2094,7 +2094,7 @@ def gerar_pdf_massa(
 
         resumo = calcular_resumo(
             blocos,
-            lancamento.data,
+            lancamento.data,usuario, 
             is_feriado=lancamento.feriado
         )
 
