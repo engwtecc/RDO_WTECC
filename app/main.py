@@ -890,15 +890,25 @@ def calcular_resumo(blocos_db, data_relatorio, is_feriado=False):
 
     dia_semana = data_relatorio.weekday()
 
+  #  if is_feriado:
+ #       jornada = 0
+   # elif dia_semana in [0,1,2,3]:  # seg-qui
+  #      jornada = 9
+ #   elif dia_semana == 4:          # sexta
+ #       jornada = 8
+  #  else:                          # sábado/domingo
+ #       jornada = 0
     if is_feriado:
         jornada = 0
-    elif dia_semana in [0,1,2,3]:  # seg-qui
-        jornada = 9
-    elif dia_semana == 4:          # sexta
-        jornada = 8
-    else:                          # sábado/domingo
+    
+    elif dia_semana in [0,1,2,3]:
+        jornada = usuario.jornada_seg_qui or 9
+    
+    elif dia_semana == 4:
+        jornada = usuario.jornada_sexta or 8
+    
+    else:
         jornada = 0
-
     # =============================
     # HORAS EXTRAS
     # =============================
