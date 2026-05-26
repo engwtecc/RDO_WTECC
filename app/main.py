@@ -829,7 +829,7 @@ def editar_projeto(
 # CÁLCULOS DE HORAS
 # =========================================
 
-def calcular_resumo(blocos_db, data_relatorio, usuario, is_feriado=False):
+def calcular_resumo(blocos_db, data_relatorio, is_feriado=False):
 
     from datetime import timedelta
 
@@ -893,9 +893,9 @@ def calcular_resumo(blocos_db, data_relatorio, usuario, is_feriado=False):
     if is_feriado:
        jornada = 0
     elif dia_semana in [0,1,2,3]:  # seg-qui
-        jornada = usuario.jornada_seg_qui
+        jornada = 9
     elif dia_semana == 4:          # sexta
-        jornada = usuario.jornada_sexta
+        jornada = 8
     else:                          # sábado/domingo
         jornada = 0
    # if is_feriado:
@@ -1054,22 +1054,15 @@ def listar_lancamento(colaborador_id: str, data: date, db: Session = Depends(get
     ]
 
 
-
-    usuario = db.query(Usuario).filter(
-        Usuario.id == colaborador_id
-    ).first()
-    
     blocos_db = db.query(BlocoAtividade).filter(
         BlocoAtividade.lancamento_id == lancamento.id
     ).order_by(BlocoAtividade.hora_inicio).all()
-    
+
     resumo = calcular_resumo(
         blocos_db,
-        data,
-        usuario,
+        data, 
         is_feriado=lancamento.feriado
     )
-
 
     blocos = []
 
@@ -1101,9 +1094,9 @@ def listar_lancamento(colaborador_id: str, data: date, db: Session = Depends(get
             dia_semana = data.weekday()
 
         if dia_semana in [0,1,2,3]:  # seg-qui
-            jornada = usuario.jornada_seg_qui
+            jornada = 9
         elif dia_semana == 4:          # sexta
-            jornada = usuario.jornada_sexta
+            jornada = 8
         else:
             jornada = 0
 
@@ -1336,7 +1329,7 @@ def finalizar_dia(colaborador_id: str, data: date, db: Session = Depends(get_db)
     # 🔥 SE FOR ADMIN → APROVA DIRETO
     if usuario and usuario.perfil == "admin":
 
-        banco_positivo, banco_negativo = calcular_banco_dia(lancamento, blocos, usuario)
+        banco_positivo, banco_negativo = calcular_banco_dia(lancamento, blocos)
 
         registro_banco = BancoHoras(
             colaborador_id=lancamento.colaborador_id,
@@ -1379,7 +1372,7 @@ def aprovar_lancamento(lancamento_id: str, db: Session = Depends(get_db)):
         BlocoAtividade.lancamento_id == lancamento.id
     ).all()
 
-    banco_positivo, banco_negativo = calcular_banco_dia(lancamento, blocos, usuario)
+    banco_positivo, banco_negativo = calcular_banco_dia(lancamento, blocos)
 
     registro_banco = BancoHoras(
         colaborador_id=lancamento.colaborador_id,
@@ -1566,8 +1559,7 @@ def gerar_pdf(lancamento_id: str, db: Session = Depends(get_db)):
 
     resumo = calcular_resumo(
         blocos,
-        lancamento.data,
-        usuario, 
+        lancamento.data, 
         is_feriado=lancamento.feriado
     )
 
@@ -1769,8 +1761,7 @@ def admin_ver_relatorio(lancamento_id: str, db: Session = Depends(get_db)):
 
     resumo = calcular_resumo(
         blocos,
-        lancamento.data,
-        usuario, 
+        lancamento.data, 
         is_feriado=lancamento.feriado
     )
 
@@ -1813,15 +1804,15 @@ def admin_ver_relatorio(lancamento_id: str, db: Session = Depends(get_db)):
         ]
     }
 
-def calcular_banco_dia(lancamento, blocos, usuario):
+def calcular_banco_dia(lancamento, blocos):
 
     dia_semana = lancamento.data.weekday()
 
     # Definir jornada corporativa
     if dia_semana in [0,1,2,3]:  # seg-qui
-        jornada = usuario.jornada_seg_qui
+        jornada = 9
     elif dia_semana == 4:          # sexta
-        jornada = usuario.jornada_sexta
+        jornada = 8
     else:
         jornada = 0                 # Sábado e Domingo
 
@@ -1834,8 +1825,7 @@ def calcular_banco_dia(lancamento, blocos, usuario):
     # Caso normal → usa cálculo padrão
     resumo = calcular_resumo(
         blocos,
-        lancamento.data,
-        usuario, 
+        lancamento.data, 
         is_feriado=lancamento.feriado
     )
 
@@ -2104,8 +2094,7 @@ def gerar_pdf_massa(
 
         resumo = calcular_resumo(
             blocos,
-            lancamento.data,
-            usuario, 
+            lancamento.data, 
             is_feriado=lancamento.feriado
         )
 
@@ -2296,7 +2285,6 @@ if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
 
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
-
 
 
 
