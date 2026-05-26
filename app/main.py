@@ -1054,15 +1054,22 @@ def listar_lancamento(colaborador_id: str, data: date, db: Session = Depends(get
     ]
 
 
+
+    usuario = db.query(Usuario).filter(
+        Usuario.id == colaborador_id
+    ).first()
+    
     blocos_db = db.query(BlocoAtividade).filter(
         BlocoAtividade.lancamento_id == lancamento.id
     ).order_by(BlocoAtividade.hora_inicio).all()
-
+    
     resumo = calcular_resumo(
         blocos_db,
-        data, 
+        data,
+        usuario,
         is_feriado=lancamento.feriado
     )
+
 
     blocos = []
 
