@@ -1097,18 +1097,18 @@ def listar_lancamento(colaborador_id: str, data: date, db: Session = Depends(get
         })
 
 
-        if lancamento.folga:
-            dia_semana = data.weekday()
+    if lancamento.folga:
+        dia_semana = data.weekday()
     
-            if dia_semana in [0,1,2,3]:  # seg-qui
-                jornada = usuario.jornada_seg_qui
-            elif dia_semana == 4:          # sexta
-                jornada = usuario.jornada_sexta
-            else:
-                jornada = 0
+        if dia_semana in [0,1,2,3]:  # seg-qui
+            jornada = usuario.jornada_seg_qui
+        elif dia_semana == 4:          # sexta
+            jornada = usuario.jornada_sexta
+        else:
+            jornada = 0
 
-            resumo["banco_positivo"] = 0
-            resumo["banco_negativo"] = jornada
+        resumo["banco_positivo"] = 0
+        resumo["banco_negativo"] = jornada
     return {
     "id": str(lancamento.id),
     "status": lancamento.status,
