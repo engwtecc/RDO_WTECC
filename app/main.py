@@ -1332,7 +1332,17 @@ def finalizar_dia(colaborador_id: str, data: date, db: Session = Depends(get_db)
             status_code=400,
             detail="Dia sem blocos. Marque como Folga se aplicável."
         )
-
+    # =========================================
+    # VALIDAR DESCRIÇÃO GERAL
+    # =========================================
+    if (
+        not lancamento.descricao_geral or
+        len(lancamento.descricao_geral.strip()) < 100
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="Inserir uma descrição ao seu relatório de pelo menos 100 caracteres"
+        )
     # 🔎 BUSCA USUÁRIO
     usuario = db.query(Usuario).filter(
         Usuario.id == colaborador_id
