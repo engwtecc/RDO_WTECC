@@ -1189,7 +1189,12 @@ def criar_lancamento(dados: schemas.LancamentoInput, db: Session = Depends(get_d
     # ADICIONAR BLOCOS
     # ==============================
     for bloco in dados.blocos:
-
+        
+        if not bloco.descricao or bloco.descricao.strip() == "":
+            raise HTTPException(
+                status_code=400,
+                detail="Colocar uma descrição para a atividade"
+            )
         inicio = bloco.inicio.replace(tzinfo=None) if bloco.inicio.tzinfo else bloco.inicio
         fim = bloco.fim.replace(tzinfo=None) if bloco.fim.tzinfo else bloco.fim
 
