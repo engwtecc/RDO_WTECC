@@ -1387,6 +1387,9 @@ def aprovar_lancamento(lancamento_id: str, db: Session = Depends(get_db)):
     lancamento = db.query(LancamentoDia).filter(
         LancamentoDia.id == lancamento_id
     ).first()
+    usuario = db.query(Usuario).filter(
+        Usuario.id == lancamento.colaborador_id
+    ).first()
 
     if not lancamento:
         raise HTTPException(status_code=404, detail="Lançamento não encontrado")
