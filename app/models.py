@@ -78,6 +78,8 @@ class Usuario(Base):
     perfil = Column(String(20), nullable=False)
     ativo = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+    jornada_seg_qui = Column(Float, default=9)
+    jornada_sexta = Column(Float, default=8)
 
 class Projeto(Base):
     __tablename__ = "projetos"
