@@ -130,7 +130,7 @@ class BancoHoras(Base):
     tipo = Column(String, default="gerado")  
     # gerado = automático na aprovação
     # abatimento = lançado manualmente
-
+    observacao = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
