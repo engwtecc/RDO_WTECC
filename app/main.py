@@ -41,7 +41,6 @@ from reportlab.lib.units import inch
 from reportlab.platypus import PageTemplate, BaseDocTemplate, Frame
 from reportlab.platypus.tableofcontents import TableOfContents
 from reportlab.pdfgen import canvas
-from pydantic import del
 from reportlab.platypus import Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
 
