@@ -41,7 +41,7 @@ from reportlab.lib.units import inch
 from reportlab.platypus import PageTemplate, BaseDocTemplate, Frame
 from reportlab.platypus.tableofcontents import TableOfContents
 from reportlab.pdfgen import canvas
-from pydantic import BaseModel
+from pydantic import del
 from reportlab.platypus import Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
 
@@ -1486,13 +1486,16 @@ def saldo_banco(colaborador_id: str, db: Session = Depends(get_db)):
     }
 
 # =========================================
-# Abatimento banco
+# Abatimento e crédito banco
 # =========================================
 class AbatimentoInput(BaseModel):
     colaborador_id: str
     horas: str
     descricao: str
-
+class CreditoInput(BaseModel):
+    colaborador_id: str
+    horas: str
+    descricao: str
 
 @app.post("/banco-horas/abatimento")
 def lancar_abatimento(dados: AbatimentoInput, db: Session = Depends(get_db)):
@@ -1509,13 +1512,45 @@ def lancar_abatimento(dados: AbatimentoInput, db: Session = Depends(get_db)):
         colaborador_id=dados.colaborador_id,
         data=date.today(),
         banco_negativo=valor_float,
-        tipo="abatimento"
+        tipo="abatimento",
+        observacao=dados.descricao
     )
 
     db.add(registro)
     db.commit()
 
     return {"mensagem": "Horas abatidas com sucesso"}
+    
+@app.post("/banco-horas/credito")
+def lancar_credito(
+    dados: CreditoInput,
+    db: Session = Depends(get_db)
+):
+
+    try:
+        horas, minutos = dados.horas.split(":")
+        total_minutos = int(horas) * 60 + int(minutos)
+    except:
+        raise HTTPException(
+            status_code=400,
+            detail="Formato inválido. Use HH:MM"
+        )
+
+    valor_float = total_minutos / 60
+
+    registro = BancoHoras(
+        colaborador_id=dados.colaborador_id,
+        data=date.today(),
+        banco_positivo=valor_float,
+        banco_negativo=0,
+        tipo="credito_manual",
+        observacao=dados.descricao
+    )
+
+    db.add(registro)
+    db.commit()
+
+    return {"mensagem": "Horas incluídas com sucesso"}
 # =========================================
 # ADMIN - LISTAR RELATÓRIOS
 # =========================================
@@ -1894,7 +1929,7 @@ def banco_total_por_funcionario(db: Session = Depends(get_db)):
 
     return resultado
 
-@app.get("/banco-horas/abatimentos/{colaborador_id}")
+@app.get("/banco-horas/movimentos/{colaborador_id}")
 def listar_abatimentos(colaborador_id: str, db: Session = Depends(get_db)):
 
     registros = db.query(BancoHoras).filter(
@@ -1905,28 +1940,39 @@ def listar_abatimentos(colaborador_id: str, db: Session = Depends(get_db)):
     return [
         {
             "id": str(r.id),
-            "horas": r.banco_negativo,
+            "tipo": r.tipo,
+            "credito": r.banco_positivo,
+            "debito": r.banco_negativo,
+            "observacao": r.observacao,
             "data": r.data,
             "created_at": r.created_at
         }
         for r in registros
     ]
 
-@app.delete("/banco-horas/abatimento/{registro_id}")
-def excluir_abatimento(registro_id: str, db: Session = Depends(get_db)):
+@app.delete("/banco-horas/movimento/{registro_id}")
+def excluir_movimento(registro_id: str, db: Session = Depends(get_db)):
 
     registro = db.query(BancoHoras).filter(
-        BancoHoras.id == registro_id,
-        BancoHoras.tipo == "abatimento"
+        BancoHoras.id == registro_id
     ).first()
 
     if not registro:
-        raise HTTPException(status_code=404, detail="Abatimento não encontrado")
+        raise HTTPException(
+            status_code=404,
+            detail="Movimentação não encontrada"
+        )
+
+    if registro.tipo == "gerado":
+        raise HTTPException(
+            status_code=400,
+            detail="Movimentações automáticas não podem ser removidas"
+        )
 
     db.delete(registro)
     db.commit()
 
-    return {"mensagem": "Abatimento removido com sucesso"}
+    return {"mensagem": "Movimentação removida com sucesso"}
 
 class FolgaInput(BaseModel):
     folga: bool
