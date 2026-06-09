@@ -1909,26 +1909,26 @@ def banco_total_por_funcionario(db: Session = Depends(get_db)):
     resultado = []
     for usuario in funcionarios:
 
-    registros = db.query(BancoHoras).filter(
-        BancoHoras.colaborador_id == usuario.id
-    ).all()
-
-    credito = 0
-    debito = 0
-
-    for r in registros:
-        credito += r.banco_positivo
-        debito += r.banco_negativo
-
-    saldo = credito - debito
-
-    resultado.append({
-        "id": str(usuario.id),
-        "nome": usuario.nome,
-        "credito": round(credito, 2),
-        "debito": round(debito, 2),
-        "banco_total": round(saldo, 2)
-    })
+        registros = db.query(BancoHoras).filter(
+            BancoHoras.colaborador_id == usuario.id
+        ).all()
+    
+        credito = 0
+        debito = 0
+    
+        for r in registros:
+            credito += r.banco_positivo
+            debito += r.banco_negativo
+    
+        saldo = credito - debito
+    
+        resultado.append({
+            "id": str(usuario.id),
+            "nome": usuario.nome,
+            "credito": round(credito, 2),
+            "debito": round(debito, 2),
+            "banco_total": round(saldo, 2)
+        })
     return resultado
 
 @app.get("/banco-horas/movimentos/{colaborador_id}")
