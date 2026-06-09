@@ -1933,8 +1933,10 @@ def listar_abatimentos(colaborador_id: str, db: Session = Depends(get_db)):
 
     registros = db.query(BancoHoras).filter(
         BancoHoras.colaborador_id == colaborador_id,
-        BancoHoras.tipo == "abatimento"
-    ).order_by(BancoHoras.data.desc()).all()
+        #BancoHoras.tipo == "abatimento"
+    #).order_by(BancoHoras.data.desc()).all()
+        BancoHoras.tipo.in_(["abatimento", "credito_manual"])
+    ).order_by(BancoHoras.created_at.desc()).all()
 
     return [
         {
