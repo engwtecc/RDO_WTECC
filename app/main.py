@@ -3,7 +3,7 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import getSampleStyleSheetf
+from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import Image
 from reportlab.lib.units import inch
 from io import BytesIO
