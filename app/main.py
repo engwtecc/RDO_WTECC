@@ -3,7 +3,7 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.styles import getSampleStyleSheetf
 from reportlab.platypus import Image
 from reportlab.lib.units import inch
 from io import BytesIO
@@ -1701,8 +1701,7 @@ def gerar_pdf(lancamento_id: str, db: Session = Depends(get_db)):
         if b.hora_inicio and b.hora_fim:
     
             duracao = (
-                datetime.combine(date.today(), b.hora_fim)
-                - datetime.combine(date.today(), b.hora_inicio)
+                b.hora_fim - b.hora_inicio
             ).total_seconds() / 3600
     
             if b.tipo_atividade_id == 1:
