@@ -2240,8 +2240,7 @@ def gerar_pdf_massa(
         total_100 += resumo["horas_100"]
         total_noturno += resumo["adicional_noturno"]
         total_geral += resumo["total"]
-        total_campo += horas_campo
-        total_escritorio += horas_escritorio
+
 
      
         # ==============================
@@ -2279,7 +2278,8 @@ def gerar_pdf_massa(
                 Paragraph(tipo.nome if tipo else "", styles["Normal"]),
                 Paragraph(b.descricao or "", styles["Normal"]),
             ])
-
+        total_campo += horas_campo
+        total_escritorio += horas_escritorio
         tabela = Table(dados_tabela, repeatRows=1, colWidths=[60, 60, 120, 120, 200])
         tabela.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
