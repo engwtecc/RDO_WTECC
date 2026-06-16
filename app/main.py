@@ -1641,7 +1641,14 @@ def gerar_pdf(lancamento_id: str, db: Session = Depends(get_db)):
     elements = []
 
     styles = getSampleStyleSheet()
-
+    from reportlab.lib.styles import ParagraphStyle
+    
+    style_tabela = ParagraphStyle(
+        "Tabela",
+        parent=styles["BodyText"],
+        fontSize=8,
+        leading=10,
+    )
     # =============================
     # LOGO
     # =============================
@@ -1715,12 +1722,22 @@ def gerar_pdf(lancamento_id: str, db: Session = Depends(get_db)):
             Paragraph(b.hora_fim.strftime("%H:%M"), styles["BodyText"]),
             Paragraph(projeto.nome if projeto else "", styles["BodyText"]),
             Paragraph(tipo.nome if tipo else "", styles["BodyText"]),
-            Paragraph(b.descricao or "", styles["BodyText"]),
+            Paragraph(b.descricao or "", style_tabela),
         ])
 
     from reportlab.platypus import Table, TableStyle
 
-    tabela = Table(data_table, repeatRows=1)
+    tabela = Table(
+        data_table,
+        repeatRows=1,
+        colWidths=[
+            45,   # Início
+            45,   # Fim
+            90,   # Projeto
+            70,   # Tipo
+            260   # Descrição
+        ]
+    )
     tabela.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), colors.lightgrey),
         ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
