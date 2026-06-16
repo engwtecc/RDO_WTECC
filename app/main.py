@@ -2110,6 +2110,11 @@ def gerar_pdf_massa(
         query = query.filter(LancamentoDia.data <= data_fim)
 
     relatorios = query.order_by(LancamentoDia.data.asc()).all()
+    if not relatorios:
+        raise HTTPException(
+            status_code=404,
+            detail="Não há relatórios aprovados para os filtros informados."
+        )
 
     data_inicio_real = relatorios[0].data
     data_fim_real = relatorios[-1].data
