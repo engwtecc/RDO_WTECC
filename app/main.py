@@ -1689,7 +1689,7 @@ def gerar_pdf(lancamento_id: str, db: Session = Depends(get_db)):
     for b in blocos:
         projeto = db.query(Projeto).filter(Projeto.id == b.projeto_id).first()
         tipo = db.query(TipoAtividade).filter(TipoAtividade.id == b.tipo_atividade_id).first()
-            if b.hora_inicio and b.hora_fim:
+    if b.hora_inicio and b.hora_fim:
     
                 duracao = (
                     datetime.combine(date.today(), b.hora_fim)
