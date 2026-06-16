@@ -2141,6 +2141,8 @@ def gerar_pdf_massa(
     total_100 = 0
     total_noturno = 0
     total_geral = 0
+    total_campo = 0
+    total_escritorio = 0
 
     if not relatorios:
         raise HTTPException(status_code=404, detail="Nenhum relatório encontrado")
@@ -2238,13 +2240,16 @@ def gerar_pdf_massa(
         total_100 += resumo["horas_100"]
         total_noturno += resumo["adicional_noturno"]
         total_geral += resumo["total"]
+        total_campo += horas_campo
+        total_escritorio += horas_escritorio
 
      
         # ==============================
         # TABELA DE ATIVIDADES
         # ==============================
         dados_tabela = [["Início", "Fim", "Projeto", "Tipo", "Descrição"]]
-
+        horas_campo = 0
+        horas_escritorio = 0
         for b in blocos:
             projeto = db.query(Projeto).filter(
                 Projeto.id == b.projeto_id
@@ -2253,7 +2258,17 @@ def gerar_pdf_massa(
             tipo = db.query(TipoAtividade).filter(
                 TipoAtividade.id == b.tipo_atividade_id
             ).first()
-
+            if b.hora_inicio and b.hora_fim:
+            
+                duracao = (
+                    b.hora_fim - b.hora_inicio
+                ).total_seconds() / 3600
+            
+                if b.tipo_atividade_id == 1:
+                    horas_campo += duracao
+            
+                elif b.tipo_atividade_id == 3:
+                    horas_escritorio += duracao
             
             styles = getSampleStyleSheet()
             
@@ -2298,6 +2313,10 @@ def gerar_pdf_massa(
         elementos.append(Spacer(1, 10))
 
         dados_resumo = [
+            ["Horas Campo", float_para_hhmm(horas_campo)],
+            ["Horas Escritório", float_para_hhmm(horas_escritorio)],
+            ["", ""],
+
             ["Horas Corridas", float_para_hhmm(resumo["horas_corridas"])],
             ["Horas Deslocamento", float_para_hhmm(resumo["horas_deslocamento"])],
             ["Horas 50%", float_para_hhmm(resumo["horas_50"])],
@@ -2346,6 +2365,10 @@ def gerar_pdf_massa(
     elementos.append(Spacer(1, 25))
 
     dados_consolidado = [
+        ["Horas Campo", float_para_hhmm(total_campo)],
+        ["Horas Escritório", float_para_hhmm(total_escritorio)],
+        ["", ""],
+        
         ["Horas Corridas", float_para_hhmm(total_corridas)],
         ["Horas Deslocamento", float_para_hhmm(total_deslocamento)],
         ["Horas 50%", float_para_hhmm(total_50)],
