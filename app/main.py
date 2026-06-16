@@ -1711,11 +1711,11 @@ def gerar_pdf(lancamento_id: str, db: Session = Depends(get_db)):
                 horas_escritorio += duracao
     
         data_table.append([
-            b.hora_inicio.strftime("%H:%M"),
-            b.hora_fim.strftime("%H:%M"),
-            projeto.nome if projeto else "",
-            tipo.nome if tipo else "",
-            b.descricao
+            Paragraph(b.hora_inicio.strftime("%H:%M"), styles["BodyText"]),
+            Paragraph(b.hora_fim.strftime("%H:%M"), styles["BodyText"]),
+            Paragraph(projeto.nome if projeto else "", styles["BodyText"]),
+            Paragraph(tipo.nome if tipo else "", styles["BodyText"]),
+            Paragraph(b.descricao or "", styles["BodyText"]),
         ])
 
     from reportlab.platypus import Table, TableStyle
@@ -1726,6 +1726,7 @@ def gerar_pdf(lancamento_id: str, db: Session = Depends(get_db)):
         ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
         ('FONTSIZE', (0,0), (-1,-1), 9),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('WORDWRAP', (0,0), (-1,-1), 'CJK'),
     ]))
 
     elements.append(tabela)
