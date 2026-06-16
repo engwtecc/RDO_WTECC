@@ -1684,11 +1684,23 @@ def gerar_pdf(lancamento_id: str, db: Session = Depends(get_db)):
     # TABELA DE ATIVIDADES
     # =============================
     data_table = [["Início", "Fim", "Projeto", "Tipo", "Descrição"]]
-
+    horas_campo = 0
+    horas_escritorio = 0
     for b in blocos:
         projeto = db.query(Projeto).filter(Projeto.id == b.projeto_id).first()
         tipo = db.query(TipoAtividade).filter(TipoAtividade.id == b.tipo_atividade_id).first()
-
+            if b.hora_inicio and b.hora_fim:
+    
+                duracao = (
+                    datetime.combine(date.today(), b.hora_fim)
+                    - datetime.combine(date.today(), b.hora_inicio)
+                ).total_seconds() / 3600
+        
+                if b.tipo_atividade_id == 1:  # Campo
+                    horas_campo += duracao
+        
+                elif b.tipo_atividade_id == 3:  # Escritório
+                    horas_escritorio += duracao
         data_table.append([
             b.hora_inicio.strftime("%H:%M"),
             b.hora_fim.strftime("%H:%M"),
@@ -1727,6 +1739,10 @@ def gerar_pdf(lancamento_id: str, db: Session = Depends(get_db)):
     elements.append(Spacer(1, 10))
 
     resumo_data = [
+        ["Horas Campo", formatar(horas_campo)],
+        ["Horas Escritório", formatar(horas_escritorio)],
+        ["", ""],
+    
         ["Horas Corridas", formatar(resumo["horas_corridas"])],
         ["Horas Deslocamento", formatar(resumo["horas_deslocamento"])],
         ["Horas 50%", formatar(resumo["horas_50"])],
